@@ -1,0 +1,49 @@
+#--------------------------------------------------------------------------------------------
+#  Copyright (c) Red Hat, Inc. All rights reserved.
+#  Licensed under the MIT License. See LICENSE in the project root for license information.
+#--------------------------------------------------------------------------------------------
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-alice-app
+  labels:
+    app: node-alice
+    tier: frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: node-alice
+    tier: frontend
+  ports:
+    - port: 80
+      targetPort: http-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-alice-apk
+  labels:
+    app: node-alice
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-alice
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: node-alice
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: quay.io/eclipse/che-nodejs10-ubi:nightly
+        command: ['/bin/sh', '-c']
+        args: ['cd /home && git clone https://github.com/voidp34r/alice.git && cd alice/ && npm install && npm start']
+        imagePullPolicy: Always
+        ports:
+        - name: http-server
+          containerPort: 8080
